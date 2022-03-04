@@ -1,5 +1,5 @@
 # DN-DETR
-Official implementation of DN-DETR
+Official implementation of DN-DETR https://arxiv.org/pdf/2203.01305.pdf
 
 
 
