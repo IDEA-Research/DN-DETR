@@ -1,5 +1,5 @@
 # DN-DETR
-Official implementation of DN-DETR https://arxiv.org/pdf/2203.01305.pdf
+Official implementation of DN-DETR https://arxiv.org/pdf/2203.01305.pdf. Accepted to CVPR 2022 (2 **strong accept**, 1 weak accept).
 
 
 
