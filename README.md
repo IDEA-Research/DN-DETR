@@ -4,7 +4,7 @@
 By Feng Li*, Hao Zhang*, [Shilong Liu](https://scholar.google.com/citations?hl=zh-CN&user=nkSVY3MAAAAJ), [Jian Guo](https://idea.edu.cn/en/about-team/jian_guo.html), [Lionel M.Ni](https://scholar.google.com/citations?hl=zh-CN&user=OzMYwDIAAAAJ), and [Lei Zhang](https://scholar.google.com/citations?hl=zh-CN&user=fIlGZToAAAAJ).
 
 ## Introduction
-This repository is an official implementation of the [DN-DETR](https://arxiv.org/pdf/2203.01305.pdf).
+This repository is an official implementation of the [DN-DETR](https://arxiv.org/pdf/2203.01305.pdf). Accepted to **CVPR 2022**
 
 Abstract: We present in this paper a novel denoising training
 method to speedup DETR (DEtection TRansformer) training and offer a deepened understanding of the slow convergence issue of DETR-like methods. We show that the slow
@@ -23,6 +23,8 @@ epochs of training respectively) among DETR-like methods
 with ResNet-50 backbone. Compared with the baseline under the same setting, DN-DETR achieves comparable performance with **50%** training epochs. 
 
 
-![DETR](.github/introc.png)
-![DETR](.github/architect.png)
-![DETR](.github/convergence.png)
+![DN-DETR](.github/introc.png)
+![DN-DETR](.github/architect.png)
+![DN-DETR](.github/convergence.png)
+
+Code will be avaliable soon. Stay tuned!
