@@ -5,6 +5,9 @@ By [Feng Li*](https://scholar.google.com/citations?hl=zh-CN&user=ybRe9GcAAAAJ), 
 
 This repository is an official implementation of the [DN-DETR](https://arxiv.org/pdf/2203.01305.pdf). Accepted to **CVPR 2022** (score **112**, got **2 strong accept** and 1 weak accept!). Code will be avaliable soon. Stay tuned!
 
+##**Update 2022 March 8** 
+We release another work [DINO:DETR with Improved DeNoising Anchor Boxes for End-to-End Object Detection](https://arxiv.org/abs/2203.03605) that for the first time establishes a DETR-like model as a SOTA model on the [leaderboard](https://paperswithcode.com/sota/object-detection-on-coco). Also based on **DN**. Code will be avaliable [here](https://github.com/IDEACVR/DINO).
+
 ## Introduction
 
 
