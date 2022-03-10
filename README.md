@@ -1,7 +1,7 @@
 **DN-DETR**: Accelerate DETR Training by Introducing Query DeNoising
 ========
 
-By [Feng Li*](https://scholar.google.com/citations?hl=zh-CN&user=ybRe9GcAAAAJ), Hao Zhang*, [Shilong Liu](https://scholar.google.com/citations?hl=zh-CN&user=nkSVY3MAAAAJ), [Jian Guo](https://idea.edu.cn/en/about-team/jian_guo.html), [Lionel M.Ni](https://scholar.google.com/citations?hl=zh-CN&user=OzMYwDIAAAAJ), and [Lei Zhang](https://scholar.google.com/citations?hl=zh-CN&user=fIlGZToAAAAJ).
+By [Feng Li*](https://scholar.google.com/citations?hl=zh-CN&user=ybRe9GcAAAAJ), [Hao Zhang*](https://scholar.google.com/citations?user=B8hPxMQAAAAJ&hl=zh-CN), [Shilong Liu](https://scholar.google.com/citations?hl=zh-CN&user=nkSVY3MAAAAJ), [Jian Guo](https://idea.edu.cn/en/about-team/jian_guo.html), [Lionel M.Ni](https://scholar.google.com/citations?hl=zh-CN&user=OzMYwDIAAAAJ), and [Lei Zhang](https://scholar.google.com/citations?hl=zh-CN&user=fIlGZToAAAAJ).
 
 This repository is an official implementation of the [DN-DETR](https://arxiv.org/pdf/2203.01305.pdf). Accepted to **CVPR 2022** (score **112**, got **2 strong accept** and 1 weak accept!). Code will be avaliable soon. Stay tuned!
 
