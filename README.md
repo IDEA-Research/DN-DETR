@@ -33,3 +33,24 @@ with ResNet-50 backbone. Compared with the baseline under the same setting, DN-D
 ![DN-DETR](.github/architect.png)
 ![DN-DETR](.github/convergence.png)
 
+## Links
+Our work is based on **DAB-DETR**. We also release another [SOAT](https://paperswithcode.com/sota/object-detection-on-coco) detection model **DINO** based on DN-DETR and DAB-DETR.   
+- **DINO: DETR with Improved DeNoising Anchor Boxes for End-to-End Object Detection**.     
+Hao Zhang*, Feng Li*, Shilong Liu*, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heung-Yeung Shum.  
+arxiv 2022.   
+[[paper]](https://arxiv.org/abs/2203.03605) [[code]](https://github.com/IDEACVR/DINO).  
+
+- **DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR**.  
+Shilong Liu, Feng Li, Hao Zhang, Xiao Yang, Xianbiao Qi, Hang Su, Jun Zhu, Lei Zhang.    
+International Conference on Learning Representations (ICLR) 2022.  
+[[Paper]](https://arxiv.org/abs/2201.12329)[[Code]](https://github.com/SlongLiu/DAB-DETR).     
+
+
+## Bibtex
+If you find our work helpful for your research, please consider citing the following BibTeX entry.   
+> @article{li2022dn,  
+  &emsp;&emsp;title={DN-DETR: Accelerate DETR Training by Introducing Query DeNoising},  
+  &emsp;&emsp;author={Li, Feng and Zhang, Hao and Liu, Shilong and Guo, Jian and Ni, Lionel M and Zhang, Lei},  
+  &emsp;&emsp;journal={arXiv preprint arXiv:2203.01305},  
+  &emsp;&emsp;year={2022}   
+}
