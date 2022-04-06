@@ -50,7 +50,7 @@ International Conference on Learning Representations (ICLR) 2022.
 [[Paper]](https://arxiv.org/abs/2201.12329)[[Code]](https://github.com/SlongLiu/DAB-DETR).     
 
 ## LICNESE
-DAB-DETR is released under the Apache 2.0 license. Please see the [LICENSE](LICNESE) file for more information.
+DN-DETR is released under the Apache 2.0 license. Please see the [LICENSE](LICNESE) file for more information.
 
 Copyright (c) IDEA. All rights reserved.
 
