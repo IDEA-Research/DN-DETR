@@ -3,7 +3,7 @@
 
 By [Feng Li*](https://fengli-ust.github.io/), [Hao Zhang*](https://scholar.google.com/citations?user=B8hPxMQAAAAJ&hl=zh-CN), [Shilong Liu](https://scholar.google.com/citations?hl=zh-CN&user=nkSVY3MAAAAJ), [Jian Guo](https://idea.edu.cn/en/about-team/jian_guo.html), [Lionel M.Ni](https://scholar.google.com/citations?hl=zh-CN&user=OzMYwDIAAAAJ), and [Lei Zhang](https://scholar.google.com/citations?hl=zh-CN&user=fIlGZToAAAAJ).
 
-This repository is an official implementation of the [DN-DETR](https://arxiv.org/pdf/2203.01305.pdf). Accepted to **CVPR 2022** (score **112**, **Oral** presentation).  
+This repository is an official implementation of the [DN-DETR](https://arxiv.org/pdf/2203.01305.pdf). Accepted to **CVPR 2022** (score **112**, **Oral** presentation). Code is avaliable now.
 [[paper link](https://arxiv.org/pdf/2203.01305.pdf)] [[中文解读](https://www.zhihu.com/question/517340666/answer/2381304399)]
 
 ## News
@@ -89,7 +89,7 @@ We provide our models under **DAB-DETR**, **DAB-Deformable-DETR(deformable encod
       <td>DN-DAB-Deformable-DETR-R50-v2<sup><a id="sup4c" herf="#sup4">4</a></sup></td>
       <td>R50</td>
       <td>49.5</td>
-      <td><a href="https://drive.google.com/drive/folders/1ByfbyCZL8o6zOKqH6dQFCsVQ8dgRXfUU?usp=sharing">Google Drive</a></td>
+      <td><a href="https://drive.google.com/drive/folders/1pIllR0VfSIqX8TmQy0PFNiPdp87j-78j?usp=sharing">Google Drive</a></td>
       <td>Optimized implementation. See <a href="https://github.com/IDEA-opensource/DAB-DETR">DAB-DETR</a> for more details.</td>
     </tr>
   </tbody>
@@ -208,7 +208,7 @@ You can expect to get the final AP about ```44.7```.
 
 For our DN-DAB-Deformable-DETR_Deformable_Encoder_Only ([download here](https://drive.google.com/drive/folders/1TLIuvMw6F9lBv77gWQ3Qcn5tdfG7kqdU?usp=sharing)). The final AP expected is ```48.6```.
 
-For our DN-DAB-Deformable-DETR ([download here](https://drive.google.com/drive/folders/1ByfbyCZL8o6zOKqH6dQFCsVQ8dgRXfUU?usp=sharing)), the final AP expected is ```49.5```.
+For our DN-DAB-Deformable-DETR ([download here](https://drive.google.com/drive/folders/1pIllR0VfSIqX8TmQy0PFNiPdp87j-78j?usp=sharing)), the final AP expected is ```49.5```.
 
 ```sh
 # for dn_detr: 44.1 AP; optimized result is 44.7AP
