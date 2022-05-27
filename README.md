@@ -7,7 +7,11 @@ This repository is an official implementation of the [DN-DETR](https://arxiv.org
 [[paper link](https://arxiv.org/pdf/2203.01305.pdf)] [[中文解读](https://www.zhihu.com/question/517340666/answer/2381304399)]
 
 ## News
-[2022/4]Code is avaliable for [DAB-DETR](https://arxiv.org/abs/2201.12329) [here](https://github.com/SlongLiu/DAB-DETR).
+[2022/5]Our code is available!
+
+[2022/4]Code is avaliable for [DAB-DETR](https://arxiv.org/abs/2201.12329) [here](https://github.com/IDEA-opensource/DAB-DETR).
+
+[2022/3]We build a repo [Awesome Detection Transformer](https://github.com/IDEACVR/awesome-detection-transformer) to present papers about transformer for detection and segmentation. Welcome to your attention!
 
 [2022/3]DN-DETR is selected for an **Oral** presentation in CVPR2022.
 
@@ -35,8 +39,317 @@ with ResNet-50 backbone. Compared with the baseline under the same setting, DN-D
 
 
 ![DN-DETR](.github/introc.png)
+## Model
+We build upon DAB-DETR and add a denoising part to accelerate training convergence. It only adds minimal computation and will be removed during inference time.
 ![DN-DETR](.github/architect.png)
+We conduct extensive experiments to validate the effectiveness of our denoising training, for example, the convergnece curve comparison. You can refer to [our paper](https://arxiv.org/pdf/2203.01305.pdf) for more experimental results.
 ![DN-DETR](.github/convergence.png)
+## Model Zoo
+We provide our models under **DAB-DETR**, **DAB-Deformable-DETR(deformable encoder only)**, and **DAB-Deformable-DETR** (See DAB-DETR [code](https://github.com/IDEA-opensource/DAB-DETR) and [paper](https://arxiv.org/abs/2201.12329) for more details). 
+
+### 50 epoch setting
+<table>
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>name</th>
+      <th>backbone</th>
+      <th>box AP</th>
+      <th>Log/Config/Checkpoint</th>
+      <th>Where in <a href="https://arxiv.org/pdf/2203.01305.pdf">Our Paper</a></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>DN-DETR-R50</td>
+      <td>R50</td>
+      <td>44.7<sup><a id="sup3c" herf="#sup1">1</a></sup></td>
+      <td><a href="https://drive.google.com/drive/folders/1kuwScU8PhN61qQOl5bbiPhKAYbzDHsWs?usp=sharing">Google Drive</a>&nbsp</td>
+      <td>Table 1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>DN-DETR-R50-DC5</td>
+      <td>R50</td>
+      <td>46.3</td>
+      <td><a href="https://drive.google.com/drive/folders/1jr8BdDdMu8esABXdU3lNY7fpWVxAJtWa?usp=sharing">Google Drive</a>&nbsp;</td>
+      <td>Table 1</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>DN-DAB-Deformbale-DETR<br>(Deformbale Encoder Only)<sup><a id="sup3c" herf="#sup3">3</a></sup></td>
+      <td>R50</td>
+      <td>48.6</td>
+      <td><a href="https://drive.google.com/drive/folders/1TLIuvMw6F9lBv77gWQ3Qcn5tdfG7kqdU?usp=sharing">Google Drive</a></td>
+      <td>Table 3</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>DN-DAB-Deformable-DETR-R50-v2<sup><a id="sup4c" herf="#sup4">4</a></sup></td>
+      <td>R50</td>
+      <td>49.5</td>
+      <td><a href="https://drive.google.com/drive/folders/1ByfbyCZL8o6zOKqH6dQFCsVQ8dgRXfUU?usp=sharing">Google Drive</a></td>
+      <td>Optimized implementation. See <a href="https://github.com/IDEA-opensource/DAB-DETR">DAB-DETR</a> for more details.</td>
+    </tr>
+  </tbody>
+</table>
+
+### 12 epoch setting
+<table>
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>name</th>
+      <th>backbone</th>
+      <th>box AP</th>
+      <th>Log/Config/Checkpoint</th>
+      <th>Where in <a href="https://arxiv.org/pdf/2203.01305.pdf">Our Paper</a></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>DN-DAB-DETR-R50-DC5(3 pat)<sup><a id="sup2c" herf="#sup1">2</a></sup></td>
+      <td>R50</td>
+      <td>41.7</td>
+      <td><a href="https://drive.google.com/drive/folders/1jWSIWTWgoiIvyA7w2xIkdk-B1pS2atPA?usp=sharing">Google Drive</a></td>
+      <td>Table 2</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>DN-DAB-DETR-R101-DC5(3 pat)<sup><a id="sup2c" herf="#sup1">2</a></sup></td>
+      <td>R101</td>
+      <td>42.8</td>
+      <td><a href="https://drive.google.com/drive/folders/1elPn06gs8mNxR3jtE53zi4cK5qLGH0AV?usp=sharing">Google Drive</a></td>
+      <td>Table 2</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>DN-DAB-Deformbale-DETR<br>(Deformble Encoder Only)<sup><a id="sup3c" herf="#sup3">3</a></sup></td>
+      <td>R50</td>
+      <td>43.4</td>
+      <td><a href="https://drive.google.com/drive/folders/1T-qiHrvDF38PyqLhMU3QFC_n-ZkVgMJh?usp=sharing">Google Drive</a></td>
+      <td>Table 2</td>
+    </tr>
+  </tbody>
+</table>
+
+Notes: 
+- <sup><a id="sup1" herf="#sup1c">1</a></sup>: The result increases compared with the reported one in our paper (from ```44.1```to ```44.7```) since we optimized the code. We did not rerun other models, so
+  <font color=red>**you are expected to get better performance than reported ones in our paper**.</font>
+- <sup><a id="sup2" herf="#sup2c">2</a></sup>: The models with marks (3 pat) are trained with multiple pattern embeds (refer to Anchor DETR or [DAB-DETR](https://arxiv.org/pdf/2203.01305.pdf) for more details.).
+- <sup><a id="sup3" herf="#sup3c">3</a></sup>: This model is based on DAB-Deformbale-DETR(Deformbale Encoder Only), which is a multiscale version of DAB-DETR. It requires 16 GPUs to train as it only use deformable attention in the encoder. 
+- <sup><a id="sup4" herf="#sup4c">4</a></sup>: This model is based on DAB-Deformbale-DETR which is an optimized implementation with deformable DETR. See <a href="https://github.com/IDEA-opensource/DAB-DETR">DAB-DETR</a> for more details. 
+  <font color=red>**You are encouraged to use this
+deformable version**</font> as it use deformable attention in both encoder and deocder, which is more lightweight (i.e, train with 4/8 A100 GPUs) and converges faster.
+
+# Usage
+## How to use denoising training in your own model
+Our code largely follow DAB-DETR and add additional components for denoising training, which are warped in a file [dn_components.py](models/DAB_DETR/dn_components.py). There are mainly 3 functions including **prepare_for_dn**, **dn_post_proces** (the first two are used in your detection forward function to process the dn part), and **compute_dn_loss**(this one is used to calculate dn loss). You can import these functions and add them to your detection model.
+You may also compare DN-DETR and DAB-DETR to see how these functions are added if you would like to use it in your own detection models.
+
+You are also encouraged to apply it to some other DETR-like models or even traditional detection models and update results
+in this repo.
+
+
+## Installation
+We use the DAB-DETR project as our codebase, hence no extra dependency is needed for our **DN-DETR**. For the **DN-Deformable-DETR**, you need to compile the deformable attention operator manually.
+
+We test our models under ```python=3.7.3,pytorch=1.9.0,cuda=11.1```. Other versions might be available as well.
+
+1. Clone this repo
+```sh
+git clone https://github.com/IDEA-opensource/DN-DETR.git
+cd DN-DETR
+```
+
+2. Install Pytorch and torchvision
+
+Follow the instruction on https://pytorch.org/get-started/locally/.
+```sh
+# an example:
+conda install -c pytorch pytorch torchvision
+```
+
+3. Install other needed packages
+```sh
+pip install -r requirements.txt
+```
+
+4. Compiling CUDA operators
+```sh
+cd models/dab_deformable_detr/ops
+python setup.py build install
+# unit test (should see all checking is True)
+python test.py
+cd ../../..
+```
+
+## Data
+Please download [COCO 2017](https://cocodataset.org/) dataset and organize them as following:
+```
+COCODIR/
+  ├── train2017/
+  ├── val2017/
+  └── annotations/
+  	├── instances_train2017.json
+  	└── instances_val2017.json
+```
+
+
+## Run
+We use the standard **DN-DETR-R50** and **DN-Deformable-DETR-R50** as examples for training and evalulation.
+
+### Eval our pretrianed models
+
+Download our DN-DETR-R50 model checkpoint from [this link](https://drive.google.com/drive/folders/1kuwScU8PhN61qQOl5bbiPhKAYbzDHsWs?usp=sharing) and perform the command below. 
+You can expect to get the final AP about ```44.7```.
+
+For our DN-DAB-Deformable-DETR_Deformable_Encoder_Only ([download here](https://drive.google.com/drive/folders/1TLIuvMw6F9lBv77gWQ3Qcn5tdfG7kqdU?usp=sharing)). The final AP expected is ```48.6```.
+
+For our DN-DAB-Deformable-DETR ([download here](https://drive.google.com/drive/folders/1ByfbyCZL8o6zOKqH6dQFCsVQ8dgRXfUU?usp=sharing)), the final AP expected is ```49.5```.
+
+```sh
+# for dn_detr: 44.1 AP; optimized result is 44.7AP
+python main.py -m dn_dab_detr \
+  --output_dir logs/dn_DABDETR/R50 \
+  --batch_size 1 \
+  --coco_path /path/to/your/COCODIR \ # replace the args to your COCO path
+  --resume /path/to/our/checkpoint \ # replace the args to your checkpoint path
+  --use_dn \
+  --eval
+
+# for dn_deformable_detr: 49.5 AP
+python main.py -m dn_deformable_detr \
+  --output_dir logs/dab_deformable_detr/R50 \
+  --batch_size 1 \
+  --coco_path /path/to/your/COCODIR \ # replace the args to your COCO path
+  --resume /path/to/our/checkpoint \ # replace the args to your checkpoint path
+  --transformer_activation relu \
+  --use_dn \
+  --eval
+  
+# for dn_deformable_detr_deformable_encoder_only: 48.6 AP
+python main.py -m dn_dab_deformable_detr_deformable_encoder_only 
+  --output_dir logs/dab_deformable_detr/R50 \
+  --batch_size 1 \
+  --coco_path /path/to/your/COCODIR \ # replace the args to your COCO path
+  --resume /path/to/our/checkpoint \ # replace the args to your checkpoint path
+  --transformer_activation relu \
+  --num_patterns 3 \  # use 3 pattern embeddings
+  --use_dn  \
+  --eval
+```
+
+
+### Training your own models
+Similarly, you can also train our model on a single process: 
+```sh
+# for dn_detr
+python main.py -m dn_dab_detr \
+  --output_dir logs/dn_DABDETR/R50 \
+  --batch_size 1 \
+  --epochs 50 \
+  --lr_drop 40 \
+  --coco_path /path/to/your/COCODIR  # replace the args to your COCO path
+  --use_dn
+```
+
+
+### Distributed Run
+However, as the training is time consuming, we suggest to train the model on multi-device.
+
+If you plan to train the models on a cluster with Slurm, here is an example command for training:
+```sh
+# for dn_detr: 44.4-44.7 AP
+python run_with_submitit.py \
+  --timeout 3000 \
+  --job_name DNDETR \
+  --coco_path /path/to/your/COCODIR \
+  -m dn_dab_detr \
+  --job_dir logs/dn_DABDETR/R50_%j \
+  --batch_size 2 \
+  --ngpus 8 \
+  --nodes 1 \
+  --epochs 50 \
+  --lr_drop 40 \
+  --use_dn
+
+# for dn_dab_deformable_detr: 49.5 AP
+python run_with_submitit.py \
+  --timeout 3000 \
+  --job_name dn_dab_deformable_detr \
+  --coco_path /path/to/your/COCODIR \
+  -m dab_deformable_detr \
+  --transformer_activation relu \
+  --job_dir logs/dn_dab_deformable_detr/R50_%j \
+  --batch_size 2 \
+  --ngpus 8 \
+  --nodes 1 \
+  --epochs 50 \
+  --lr_drop 40 \
+  --use_dn
+
+# for dn_dab_deformable_detr_deformable_encoder_only: 48.6 AP
+python run_with_submitit.py \
+  --timeout 3000 \
+  --job_name dn_dab_deformable_detr_deformable_encoder_only \
+  --coco_path /path/to/your/COCODIR \
+  -m dn_dab_deformable_detr_deformable_encoder_only \
+  --transformer_activation relu \
+  --job_dir logs/dn_dab_deformable_detr/R50_%j \
+  --num_patterns 3 \ 
+  --batch_size 1 \
+  --ngpus 8 \
+  --nodes 2 \
+  --epochs 50 \
+  --lr_drop 40 \
+  --use_dn
+```
+If you want to train our DC reversion or mulitple-patterns version, add 
+```sh
+--dilation  # for DC version
+
+--num_patterns 3  # for 3 patterns
+```
+However, this requires additional training resources and memory, i.e, use 16 GPUs.
+
+The final AP should be similar or better to ours, as our optimized result is better than our reported
+performance in the paper( for example, we report ```44.1``` for **DN-DETR**, but our new result can achieve ```44.7```. 
+Don't be surprised if you get better result! ). 
+
+Our training setting is same as DAB-DETR but add a argument ```--use_dn```, you may also refer to
+ [DAB-DETR](https://github.com/IDEA-opensource/DAB-DETR) as well. 
+
+Notes: 
+  - The results are sensitive to the batch size. We use 16(2 images each GPU x 8 GPUs) by default.
+
+
+Or run with multi-processes on a single node:
+```sh
+# for dn_dab_detr: 44.7 AP
+python -m torch.distributed.launch --nproc_per_node=8 \
+  main.py -m dn_dab_detr \
+  --output_dir logs/dn_DABDETR/R50 \
+  --batch_size 2 \
+  --epochs 50 \
+  --lr_drop 40 \
+  --coco_path /path/to/your/COCODIR \
+  --use_dn
+
+# for dn_deformable_detr: 49.5 AP
+python -m torch.distributed.launch --nproc_per_node=8 \
+  main.py -m dn_dab_deformable_detr \
+  --output_dir logs/dn_dab_deformable_detr/R50 \
+  --batch_size 2 \
+  --epochs 50 \
+  --lr_drop 40 \
+  --transformer_activation relu \
+  --coco_path /path/to/your/COCODIR \
+  --use_dn
+```
+
 
 ## Links
 Our work is based on **DAB-DETR**. We also release another [SOAT](https://paperswithcode.com/sota/object-detection-on-coco) detection model **DINO** based on DN-DETR and DAB-DETR.   
@@ -48,7 +361,7 @@ arxiv 2022.
 - **DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR**.  
 Shilong Liu, Feng Li, Hao Zhang, Xiao Yang, Xianbiao Qi, Hang Su, Jun Zhu, Lei Zhang.    
 International Conference on Learning Representations (ICLR) 2022.  
-[[Paper]](https://arxiv.org/abs/2201.12329)[[Code]](https://github.com/SlongLiu/DAB-DETR).     
+[[Paper]](https://arxiv.org/abs/2201.12329) [[Code]](https://github.com/SlongLiu/DAB-DETR).     
 
 ## LICNESE
 DN-DETR is released under the Apache 2.0 license. Please see the [LICENSE](LICNESE) file for more information.
