@@ -65,7 +65,7 @@ We provide our models under **DAB-DETR**, **DAB-Deformable-DETR(deformable encod
       <td>DN-DETR-R50</td>
       <td>R50</td>
       <td>44.7<sup><a id="sup3c" herf="#sup1">1</a></sup></td>
-      <td><a href="https://drive.google.com/drive/folders/1kuwScU8PhN61qQOl5bbiPhKAYbzDHsWs?usp=sharing">Google Drive</a>&nbsp</td>
+      <td><a href="https://drive.google.com/drive/folders/1pIllR0VfSIqX8TmQy0PFNiPdp87j-78j?usp=sharing">Google Drive</a>&nbsp</td>
       <td>Table 1</td>
     </tr>
     <tr>
