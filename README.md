@@ -47,6 +47,8 @@ We conduct extensive experiments to validate the effectiveness of our denoising 
 ## Model Zoo
 We provide our models under **DAB-DETR**, **DAB-Deformable-DETR(deformable encoder only)**, and **DAB-Deformable-DETR** (See DAB-DETR [code](https://github.com/IDEA-opensource/DAB-DETR) and [paper](https://arxiv.org/abs/2201.12329) for more details). 
 
+You can also refer to our [model zoo](https://drive.google.com/drive/folders/1wmiZKfOg_DIGIwyQedV4rzNqUwHVTkUv?usp=sharing).
+
 ### 50 epoch setting
 <table>
   <thead>
@@ -65,7 +67,7 @@ We provide our models under **DAB-DETR**, **DAB-Deformable-DETR(deformable encod
       <td>DN-DETR-R50</td>
       <td>R50</td>
       <td>44.7<sup><a id="sup3c" herf="#sup1">1</a></sup></td>
-      <td><a href="https://drive.google.com/drive/folders/1pIllR0VfSIqX8TmQy0PFNiPdp87j-78j?usp=sharing">Google Drive</a>&nbsp</td>
+      <td><a href="https://drive.google.com/drive/folders/1kuwScU8PhN61qQOl5bbiPhKAYbzDHsWs?usp=sharing">Google Drive</a>&nbsp</td>
       <td>Table 1</td>
     </tr>
     <tr>
@@ -146,7 +148,7 @@ deformable version**</font> as it use deformable attention in both encoder and d
 
 # Usage
 ## How to use denoising training in your own model
-Our code largely follow DAB-DETR and add additional components for denoising training, which are warped in a file [dn_components.py](models/DAB_DETR/dn_components.py). There are mainly 3 functions including **prepare_for_dn**, **dn_post_proces** (the first two are used in your detection forward function to process the dn part), and **compute_dn_loss**(this one is used to calculate dn loss). You can import these functions and add them to your detection model.
+Our code largely follows DAB-DETR and adds additional components for denoising training, which are warped in a file [dn_components.py](models/DAB_DETR/dn_components.py). There are mainly 3 functions including **prepare_for_dn**, **dn_post_proces** (the first two are used in your detection forward function to process the dn part), and **compute_dn_loss**(this one is used to calculate dn loss). You can import these functions and add them to your detection model.
 You may also compare DN-DETR and DAB-DETR to see how these functions are added if you would like to use it in your own detection models.
 
 You are also encouraged to apply it to some other DETR-like models or even traditional detection models and update results
