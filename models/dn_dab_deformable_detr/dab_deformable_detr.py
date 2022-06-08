@@ -196,14 +196,8 @@ class DABDeformableDETR(nn.Module):
                 refanchor = self.refpoint_embed.weight      # nq, 4
                 # query_embeds = torch.cat((tgt_embed, refanchor), dim=1)
             else:
-                # multi patterns
-                tgt_embed = self.tgt_embed.weight           # nq, 256
-                pat_embed = self.patterns_embed.weight      # num_pat, 256
-                tgt_embed = tgt_embed.repeat(self.num_patterns, 1) # nq*num_pat, 256
-                pat_embed = pat_embed[:, None, :].repeat(1, self.num_queries, 1).flatten(0, 1) # nq*num_pat, 256
-                tgt_all_embed = tgt_embed + pat_embed
-                refanchor = self.refpoint_embed.weight.repeat(self.num_patterns, 1)      # nq*num_pat, 4
-                # query_embeds = torch.cat((tgt_all_embed, refanchor), dim=1)
+                # multi patterns is not used in this version
+                assert NotImplementedError
         else:
             assert NotImplementedError
 
