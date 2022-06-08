@@ -65,7 +65,8 @@ def prepare_for_dn(dn_args, tgt_weight, embedweight, batch_size, training, num_q
     if num_patterns == 0:
         num_patterns = 1
     indicator0 = torch.zeros([num_queries * num_patterns, 1]).cuda()
-    tgt = torch.cat([tgt_weight, indicator0], dim=1)
+    # sometimes the target is empty, add a zero part of label_enc to avoid unused parameters
+    tgt = torch.cat([tgt_weight, indicator0], dim=1) + label_enc.weight[0][0]*torch.tensor(0).cuda()
     refpoint_emb = embedweight
     if training:
         known = [(torch.ones_like(t['labels'])).cuda() for t in targets]
