@@ -378,9 +378,12 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 ## Bibtex
 If you find our work helpful for your research, please consider citing the following BibTeX entry.   
-> @article{li2022dn,  
-  &emsp;&emsp;title={DN-DETR: Accelerate DETR Training by Introducing Query DeNoising},  
-  &emsp;&emsp;author={Li, Feng and Zhang, Hao and Liu, Shilong and Guo, Jian and Ni, Lionel M and Zhang, Lei},  
-  &emsp;&emsp;journal={arXiv preprint arXiv:2203.01305},  
-  &emsp;&emsp;year={2022}   
+```
+@inproceedings{li2022dn,
+  title={Dn-detr: Accelerate detr training by introducing query denoising},
+  author={Li, Feng and Zhang, Hao and Liu, Shilong and Guo, Jian and Ni, Lionel M and Zhang, Lei},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={13619--13627},
+  year={2022}
 }
+```
