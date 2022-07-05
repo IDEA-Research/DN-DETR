@@ -183,7 +183,7 @@ pip install -r requirements.txt
 
 4. Compiling CUDA operators
 ```sh
-cd models/dab_deformable_detr/ops
+cd models/dn_dab_deformable_detr/ops
 python setup.py build install
 # unit test (should see all checking is True)
 python test.py
