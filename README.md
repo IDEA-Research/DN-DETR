@@ -97,7 +97,7 @@ drive百度网盘]](https://pan.baidu.com/s/13Dc_DgliVps4bHVlNujA4Q?pwd=niet)（
       <th>6</th>
       <td>DN-DAB-Deformable-DETR-R50-v2<sup><a id="sup4c" herf="#sup4">4</a></sup></td>
       <td>R50</td>
-      <td>49.5 (48.4 in 24 epoches)</td>
+      <td>49.5 (48.4 in 24 epochs)</td>
       <td><a href="https://drive.google.com/drive/folders/1pIllR0VfSIqX8TmQy0PFNiPdp87j-78j?usp=sharing">Google Drive</a>&nbsp/&nbsp<a href="https://pan.baidu.com/s/1ugoXlpr3x72qcXPKQ669sA?pwd=niet">BaiDu</a>&nbsp</td>
       <td>Optimized implementation with deformable attention in both encoder and decoder. See <a href="https://github.com/IDEA-opensource/DAB-DETR">DAB-DETR</a> for more details.</td>
     </tr>
@@ -159,7 +159,7 @@ Notes:
 - <sup><a id="sup3" herf="#sup3c">3</a></sup>: This model is based on DAB-Deformbale-DETR(Deformbale Encoder Only), which is a multiscale version of DAB-DETR. It requires 16 GPUs to train as it only use deformable attention in the encoder. 
 - <sup><a id="sup4" herf="#sup4c">4</a></sup>: This model is based on DAB-Deformbale-DETR which is an optimized implementation with deformable DETR. See <a href="https://github.com/IDEA-opensource/DAB-DETR">DAB-DETR</a> for more details. 
   <font color=red>**You are encouraged to use this
-deformable version**</font> as it uses deformable attention in both encoder and deocder, which is more lightweight (i.e, train with 4/8 A100 GPUs) and converges faster (i.e, achieves ```48.4``` in 24 epoches, comparable to the 50-epoch DAB-Deformable-DETR).
+deformable version**</font> as it uses deformable attention in both encoder and deocder, which is more lightweight (i.e, train with 4/8 A100 GPUs) and converges faster (i.e, achieves ```48.4``` in 24 epochs, comparable to the 50-epoch DAB-Deformable-DETR).
 
 # Usage
 ## How to use denoising training in your own model
