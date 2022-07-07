@@ -9,7 +9,7 @@ This repository is an official implementation of the [DN-DETR](https://arxiv.org
 ## News
 [2022/6]: We release a unified detection and segmentation model [Mask DINO](https://arxiv.org/pdf/2206.02777.pdf) that achieves the best results on all the three segmentation tasks (**54.5** AP on [COCO instance leaderboard](https://paperswithcode.com/sota/instance-segmentation-on-coco-minival), **59.4** PQ on [COCO panoptic leaderboard](https://paperswithcode.com/sota/panoptic-segmentation-on-coco-minival), and **60.8** mIoU on [ADE20K semantic leaderboard](https://paperswithcode.com/sota/semantic-segmentation-on-ade20k))! Code will be available [here](https://github.com/IDEACVR/MaskDINO).
 
-[2022/5]Our code is available!
+[2022/5]Our code is available! Better performance ```49.5```AP on COCO achieved with ResNet-50.
 
 [2022/4]Code is avaliable for [DAB-DETR](https://arxiv.org/abs/2201.12329) [here](https://github.com/IDEA-opensource/DAB-DETR).
 
@@ -21,26 +21,14 @@ This repository is an official implementation of the [DN-DETR](https://arxiv.org
 [2022/3]We release another work [DINO:DETR with Improved DeNoising Anchor Boxes for End-to-End Object Detection](https://arxiv.org/abs/2203.03605) that for the first time establishes a DETR-like model as a SOTA model on the [leaderboard](https://paperswithcode.com/sota/object-detection-on-coco). Also based on **DN**. Code will be avaliable [here](https://github.com/IDEACVR/DINO).
 
 ## Introduction
+1. We present a novel denoising training method to speedup DETR training and offer a deepened understanding of the slow convergence issue of DETR-like methods. 
+2. DN is only a training method and be plugged into many DETR-like models or even traditional models to boost performance.
+3. DN-DETR achieves AP **43.4** and **48.6** with 12 and 50
+epochs of training 
+with ResNet-50 backbone. Compared with the baseline models under the same setting, DN-DETR achieves comparable performance with **50%** training epochs.
+4. Our optmized models result in better performance. DN-Deformable-DETR achieves **49.5** with a ResNet-50 backbone.
 
 
-**Abstract**: We present in this paper a novel denoising training
-method to speedup DETR (DEtection TRansformer) training and offer a deepened understanding of the slow convergence issue of DETR-like methods. We show that the slow
-convergence results from the instability of bipartite graph
-matching which causes inconsistent optimization goals in
-early training stages. To address this issue, except for the
-Hungarian loss, our method additionally feeds ground-truth
-bounding boxes with noises into Transformer decoder and
-trains the model to reconstruct the original boxes, which
-effectively reduces the bipartite graph matching difficulty
-and leads to a faster convergence. Our method is universal
-and can be easily plugged into any DETR-like methods by
-adding dozens of lines of code to achieve a remarkable improvement. As a result, our DN-DETR results in a remarkable improvement (+**1.9**AP) under the same setting and
-achieves the best result (AP **43.4** and **48.6** with 12 and 50
-epochs of training respectively) among DETR-like methods
-with ResNet-50 backbone. Compared with the baseline under the same setting, DN-DETR achieves comparable performance with **50%** training epochs. 
-
-
-![DN-DETR](.github/introc.png)
 ## Model
 We build upon DAB-DETR and add a denoising part to accelerate training convergence. It only adds minimal computation and will be removed during inference time.
 ![DN-DETR](.github/architect.png)
@@ -51,10 +39,9 @@ We provide our models under **DAB-DETR**, **DAB-Deformable-DETR(deformable encod
 
 You can also refer to our 
 
-[[model zoo in goole drive]](https://drive.google.com/drive/folders/1wmiZKfOg_DIGIwyQedV4rzNqUwHVTkUv?usp=sharing) 
+[[model zoo in google drive]](https://drive.google.com/drive/folders/1wmiZKfOg_DIGIwyQedV4rzNqUwHVTkUv?usp=sharing) 
 
-[[model zoo in 
-drive百度网盘]](https://pan.baidu.com/s/13Dc_DgliVps4bHVlNujA4Q?pwd=niet)（提取码niet）.
+[[model zoo in 百度网盘]](https://pan.baidu.com/s/13Dc_DgliVps4bHVlNujA4Q?pwd=niet)（提取码niet）.
 
 ### 50 epoch setting
 <table>
@@ -144,7 +131,7 @@ drive百度网盘]](https://pan.baidu.com/s/13Dc_DgliVps4bHVlNujA4Q?pwd=niet)（
     <tr>
       <th>5</th>
       <td>DN-DAB-Deformbale-DETR<br>(Deformble Encoder Only)<sup><a id="sup3c" herf="#sup3">3</a></sup></td>
-      <td>R50</td>
+      <td>R101</td>
       <td>44.1</td>
       <td><a href="https://drive.google.com/drive/folders/1V8CH7AMf9HGUYNNgEYaGK_2g2T2LNNWD?usp=sharing">Google Drive</a>&nbsp/&nbsp<a href="https://pan.baidu.com/s/1Q_C7FMXAlyPcWkIhbf5M6g?pwd=niet">BaiDu</a>&nbsp</td>
       <td>Table 2</td>
