@@ -62,7 +62,7 @@ You can also refer to our
       <th>0</th>
       <td>DN-DETR-R50</td>
       <td>R50</td>
-      <td>44.7<sup><a id="sup3c" herf="#sup1">1</a></sup></td>
+      <td>44.4<sup><a id="sup3c" herf="#sup1">1</a></sup></td>
       <td><a href="https://drive.google.com/drive/folders/1kuwScU8PhN61qQOl5bbiPhKAYbzDHsWs?usp=sharing">Google Drive</a>&nbsp/&nbsp<a href="https://pan.baidu.com/s/1TqvnjsbAjARZp1i8cB2w8A?pwd=niet">BaiDu</a>&nbsp</td>
       <td>Table 1</td>
     </tr>
@@ -142,7 +142,7 @@ You can also refer to our
 </table>
 
 Notes: 
-- <sup><a id="sup1" herf="#sup1c">1</a></sup>: The result increases compared with the reported one in our paper (from ```44.1```to ```44.7```) since we optimized the code. We did not rerun other models, so
+- <sup><a id="sup1" herf="#sup1c">1</a></sup>: The result increases compared with the reported one in our paper (from ```44.1```to ```44.4```) since we optimized the code. We did not rerun other models, so
   <font color=red>**you are expected to get better performance than reported ones in our paper**.</font>
 - <sup><a id="sup2" herf="#sup2c">2</a></sup>: The models with marks (3 pat) are trained with multiple pattern embeds (refer to Anchor DETR or [DAB-DETR](https://arxiv.org/pdf/2203.01305.pdf) for more details.).
 - <sup><a id="sup3" herf="#sup3c">3</a></sup>: This model is based on DAB-Deformbale-DETR(Deformbale Encoder Only), which is a multiscale version of DAB-DETR. It requires 16 GPUs to train as it only use deformable attention in the encoder. 
@@ -210,14 +210,14 @@ We use the standard **DN-DETR-R50** and **DN-Deformable-DETR-R50** as examples f
 ### Eval our pretrianed models
 
 Download our DN-DETR-R50 model checkpoint from [this link](https://drive.google.com/drive/folders/1kuwScU8PhN61qQOl5bbiPhKAYbzDHsWs?usp=sharing) and perform the command below. 
-You can expect to get the final AP about ```44.7```.
+You can expect to get the final AP about ```44.4```.
 
 For our DN-DAB-Deformable-DETR_Deformable_Encoder_Only ([download here](https://drive.google.com/drive/folders/1TLIuvMw6F9lBv77gWQ3Qcn5tdfG7kqdU?usp=sharing)). The final AP expected is ```48.6```.
 
 For our DN-DAB-Deformable-DETR ([download here](https://drive.google.com/drive/folders/1pIllR0VfSIqX8TmQy0PFNiPdp87j-78j?usp=sharing)), the final AP expected is ```49.5```.
 
 ```sh
-# for dn_detr: 44.1 AP; optimized result is 44.7AP
+# for dn_detr: 44.1 AP; optimized result is 44.4AP
 python main.py -m dn_dab_detr \
   --output_dir logs/dn_DABDETR/R50 \
   --batch_size 1 \
@@ -268,7 +268,7 @@ However, as the training is time consuming, we suggest to train the model on mul
 
 If you plan to train the models on a cluster with Slurm, here is an example command for training:
 ```sh
-# for dn_detr: 44.4-44.7 AP
+# for dn_detr: 44.4 AP
 python run_with_submitit.py \
   --timeout 3000 \
   --job_name DNDETR \
@@ -322,7 +322,7 @@ If you want to train our DC reversion or mulitple-patterns version, add
 However, this requires additional training resources and memory, i.e, use 16 GPUs.
 
 The final AP should be similar or better to ours, as our optimized result is better than our reported
-performance in the paper( for example, we report ```44.1``` for **DN-DETR**, but our new result can achieve ```44.7```. 
+performance in the paper( for example, we report ```44.1``` for **DN-DETR**, but our new result can achieve ```44.4```. 
 Don't be surprised if you get better result! ). 
 
 Our training setting is same as DAB-DETR but add a argument ```--use_dn```, you may also refer to
@@ -334,7 +334,7 @@ Notes:
 
 Or run with multi-processes on a single node:
 ```sh
-# for dn_dab_detr: 44.7 AP
+# for dn_dab_detr: 44.4 AP
 python -m torch.distributed.launch --nproc_per_node=8 \
   main.py -m dn_dab_detr \
   --output_dir logs/dn_DABDETR/R50 \
