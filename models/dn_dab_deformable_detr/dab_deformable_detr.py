@@ -73,21 +73,22 @@ class DABDeformableDETR(nn.Module):
         self.use_dab = use_dab
         self.num_patterns = num_patterns
         self.random_refpoints_xy = random_refpoints_xy
+        self.two_stage = two_stage
         # dn label enc
         self.label_enc = nn.Embedding(num_classes + 1, hidden_dim - 1)  # # for indicator
-        if not two_stage:
-            if not use_dab:
-                self.query_embed = nn.Embedding(num_queries, hidden_dim*2)
-            else:
+        if not use_dab:
+            self.query_embed = nn.Embedding(num_queries, hidden_dim*2)
+        else:
+            if not self.two_stage:
                 self.tgt_embed = nn.Embedding(num_queries, hidden_dim-1)  # for indicator
                 self.refpoint_embed = nn.Embedding(num_queries, 4)
+
                 if random_refpoints_xy:
                     # import ipdb; ipdb.set_trace()
                     self.refpoint_embed.weight.data[:, :2].uniform_(0,1)
                     self.refpoint_embed.weight.data[:, :2] = inverse_sigmoid(self.refpoint_embed.weight.data[:, :2])
                     self.refpoint_embed.weight.data[:, :2].requires_grad = False
                 
-
         if self.num_patterns > 0:
             self.patterns_embed = nn.Embedding(self.num_patterns, hidden_dim)
 
@@ -116,7 +117,6 @@ class DABDeformableDETR(nn.Module):
         self.backbone = backbone
         self.aux_loss = aux_loss
         self.with_box_refine = with_box_refine
-        self.two_stage = two_stage
 
         prior_prob = 0.01
         bias_value = -math.log((1 - prior_prob) / prior_prob)
@@ -129,6 +129,7 @@ class DABDeformableDETR(nn.Module):
 
         # if two-stage, the last class_embed and bbox_embed is for region proposal generation
         num_pred = (transformer.decoder.num_layers + 1) if two_stage else transformer.decoder.num_layers
+
         if with_box_refine:
             self.class_embed = _get_clones(self.class_embed, num_pred)
             self.bbox_embed = _get_clones(self.bbox_embed, num_pred)
@@ -188,16 +189,21 @@ class DABDeformableDETR(nn.Module):
                 masks.append(mask)
                 pos.append(pos_l)
 
-        if self.two_stage:
-            assert NotImplementedError
-        elif self.use_dab:
-            if self.num_patterns == 0:
-                tgt_all_embed = tgt_embed = self.tgt_embed.weight           # nq, 256
-                refanchor = self.refpoint_embed.weight      # nq, 4
-                # query_embeds = torch.cat((tgt_embed, refanchor), dim=1)
+        #if self.two_stage:
+        #    assert NotImplementedError
+        #elif self.use_dab:
+        if self.use_dab:
+            if not self.two_stage:
+                if self.num_patterns == 0:
+                    tgt_all_embed = tgt_embed = self.tgt_embed.weight           # nq, 256
+                    refanchor = self.refpoint_embed.weight      # nq, 4
+                    # query_embeds = torch.cat((tgt_embed, refanchor), dim=1)
+                else:
+                    # multi patterns is not used in this version
+                    assert NotImplementedError
             else:
-                # multi patterns is not used in this version
-                assert NotImplementedError
+                tgt_all_embed = None
+                refanchor = None
         else:
             assert NotImplementedError
 
@@ -205,16 +211,21 @@ class DABDeformableDETR(nn.Module):
         input_query_label, input_query_bbox, attn_mask, mask_dict = \
             prepare_for_dn(dn_args, tgt_all_embed, refanchor, src.size(0), self.training, self.num_queries, self.num_classes,
                            self.hidden_dim, self.label_enc)
-        query_embeds = torch.cat((input_query_label, input_query_bbox), dim=2)
+        if input_query_label is not None and input_query_bbox is not None:
+            # sometimes the target is empty, add a zero part of label_enc to avoid unused parameters
+            input_query_label += self.label_enc.weight[0][0]*torch.tensor(0).cuda()
+            query_embeds = torch.cat((input_query_label, input_query_bbox), dim=2)
+        else:
+            query_embeds = None
 
         hs, init_reference, inter_references, enc_outputs_class, enc_outputs_coord_unact = \
             self.transformer(srcs, masks, pos, query_embeds, attn_mask)
-
-
+        levels = hs.shape[0]
 
         outputs_classes = []
         outputs_coords = []
-        for lvl in range(hs.shape[0]):
+        #for lvl in range(hs.shape[0]):
+        for lvl in range(levels):
             if lvl == 0:
                 reference = init_reference
             else:
@@ -462,6 +473,10 @@ class SetCriterion(nn.Module):
 
 class PostProcess(nn.Module):
     """ This module converts the model's output into the format expected by the coco api"""
+    def __init__(self, num_select=300, nms_iou_threshold=-1) -> None:
+        super().__init__()
+        self.num_select = num_select
+        self.nms_iou_threshold = nms_iou_threshold
 
     @torch.no_grad()
     def forward(self, outputs, target_sizes):
@@ -472,13 +487,14 @@ class PostProcess(nn.Module):
                           For evaluation, this must be the original image size (before any data augmentation)
                           For visualization, this should be the image size after data augment, but before padding
         """
+        num_select = self.num_select
         out_logits, out_bbox = outputs['pred_logits'], outputs['pred_boxes']
 
         assert len(out_logits) == len(target_sizes)
         assert target_sizes.shape[1] == 2
 
         prob = out_logits.sigmoid()
-        topk_values, topk_indexes = torch.topk(prob.view(out_logits.shape[0], -1), 100, dim=1)
+        topk_values, topk_indexes = torch.topk(prob.view(out_logits.shape[0], -1), num_select, dim=1)
         scores = topk_values
         topk_boxes = topk_indexes // out_logits.shape[2]
         labels = topk_indexes % out_logits.shape[2]
@@ -547,7 +563,8 @@ def build_dab_deformable_detr(args):
     # TODO this is a hack
     if args.aux_loss:
         aux_weight_dict = {}
-        for i in range(args.dec_layers - 1):
+        num_layers = args.dec_layers
+        for i in range(num_layers - 1):
             aux_weight_dict.update({k + f'_{i}': v for k, v in weight_dict.items()})
         aux_weight_dict.update({k + f'_enc': v for k, v in weight_dict.items()})
         weight_dict.update(aux_weight_dict)
@@ -558,7 +575,7 @@ def build_dab_deformable_detr(args):
     # num_classes, matcher, weight_dict, losses, focal_alpha=0.25
     criterion = SetCriterion(num_classes, matcher, weight_dict, losses, focal_alpha=args.focal_alpha)
     criterion.to(device)
-    postprocessors = {'bbox': PostProcess()}
+    postprocessors = {'bbox': PostProcess(num_select=args.num_results)}
     if args.masks:
         postprocessors['segm'] = PostProcessSegm()
         if args.dataset_file == "coco_panoptic":

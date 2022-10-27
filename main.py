@@ -8,9 +8,9 @@ import json
 import random
 import time
 from pathlib import Path
+from os import path
 import os, sys
 from typing import Optional
-
 
 from util.logger import setup_logger
 
@@ -39,6 +39,8 @@ def get_args_parser():
                         help="label noise ratio to flip")
     parser.add_argument('--box_noise_scale', default=0.4, type=float,
                         help="box noise scale to shift and scale")
+    parser.add_argument('--contrastive', action="store_true",
+                        help="use contrastive training.")
 
     # about lr
     parser.add_argument('--lr', default=1e-4, type=float, 
@@ -50,6 +52,7 @@ def get_args_parser():
     parser.add_argument('--weight_decay', default=1e-4, type=float)
     parser.add_argument('--epochs', default=50, type=int)
     parser.add_argument('--lr_drop', default=40, type=int)
+    parser.add_argument('--override_resumed_lr_drop', default=False, action='store_true')
     parser.add_argument('--drop_lr_now', action="store_true", help="load checkpoint and drop for 12epoch setting")
     parser.add_argument('--save_checkpoint_interval', default=10, type=int)
     parser.add_argument('--clip_max_norm', default=0.1, type=float,
@@ -94,6 +97,8 @@ def get_args_parser():
                         help="Number of attention heads inside the transformer's attentions")
     parser.add_argument('--num_queries', default=300, type=int,
                         help="Number of query slots")
+    parser.add_argument('--num_results', default=300, type=int,
+                        help="Number of detection results")
     parser.add_argument('--pre_norm', action='store_true', 
                         help="Using pre-norm in the Transformer blocks.")    
     parser.add_argument('--num_select', default=300, type=int, 
@@ -170,7 +175,7 @@ def get_args_parser():
     parser.add_argument('--num_workers', default=10, type=int)
     parser.add_argument('--debug', action='store_true', 
                         help="For debug only. It will perform only a few steps during trainig and val.")
-    parser.add_argument('--find_unused_params', action='store_true')
+    parser.add_argument('--find_unused_params', default=False, action='store_true')
 
     parser.add_argument('--save_results', action='store_true', 
                         help="For eval only. Save the outputs for all images.")
@@ -222,8 +227,8 @@ def main(args):
     logger.info('local_rank: {}'.format(args.local_rank))
     logger.info("args: " + str(args) + '\n')
 
-    if args.frozen_weights is not None:
-        assert args.masks, "Frozen training is meant for segmentation only"
+    #if args.frozen_weights is not None:
+    #    assert args.masks, "Frozen training is meant for segmentation only"
     print(args)
 
     device = torch.device(args.device)
@@ -293,7 +298,7 @@ def main(args):
         model_without_ddp.detr.load_state_dict(checkpoint['model'])
 
     output_dir = Path(args.output_dir)
-    if args.resume:
+    if args.resume and (args.resume.startswith('https') or path.exists(args.resume)):
         if args.resume.startswith('https'):
             checkpoint = torch.hub.load_state_dict_from_url(
                 args.resume, map_location='cpu', check_hash=True)
@@ -303,6 +308,11 @@ def main(args):
         if not args.eval and 'optimizer' in checkpoint and 'lr_scheduler' in checkpoint and 'epoch' in checkpoint:
             optimizer.load_state_dict(checkpoint['optimizer'])
             lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
+            if args.override_resumed_lr_drop:
+                print('Warning: (hack) args.override_resumed_lr_drop is set to True, so args.lr_drop would override lr_drop in resumed lr_scheduler.')
+                lr_scheduler.step_size = args.lr_drop
+                lr_scheduler.base_lrs = list(map(lambda group: group['initial_lr'], optimizer.param_groups))
+            lr_scheduler.step(lr_scheduler.last_epoch)
             args.start_epoch = checkpoint['epoch'] + 1
 
             if args.drop_lr_now:

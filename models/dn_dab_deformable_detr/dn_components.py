@@ -58,40 +58,63 @@ def prepare_for_dn(dn_args, tgt_weight, embedweight, batch_size, training, num_q
     """
 
     if training:
-        targets, scalar, label_noise_scale, box_noise_scale, num_patterns = dn_args
+        targets, scalar, label_noise_scale, box_noise_scale, num_patterns, contrastive = dn_args
     else:
         num_patterns = dn_args
 
     if num_patterns == 0:
         num_patterns = 1
-    indicator0 = torch.zeros([num_queries * num_patterns, 1]).cuda()
-    # sometimes the target is empty, add a zero part of label_enc to avoid unused parameters
-    tgt = torch.cat([tgt_weight, indicator0], dim=1) + label_enc.weight[0][0]*torch.tensor(0).cuda()
-    refpoint_emb = embedweight
+    if tgt_weight is not None and embedweight is not None:
+        indicator0 = torch.zeros([num_queries * num_patterns, 1]).cuda()
+        # sometimes the target is empty, add a zero part of label_enc to avoid unused parameters
+        tgt = torch.cat([tgt_weight, indicator0], dim=1) + label_enc.weight[0][0]*torch.tensor(0).cuda()
+        refpoint_emb = embedweight
+    else:
+        tgt = None
+        refpoint_emb = None
+
     if training:
-        known = [(torch.ones_like(t['labels'])).cuda() for t in targets]
-        know_idx = [torch.nonzero(t) for t in known]
-        known_num = [sum(k) for k in known]
-        # you can uncomment this to use fix number of dn queries
-        # if int(max(known_num))>0:
-        #     scalar=scalar//int(max(known_num))
+        if contrastive:
+            new_targets = []
+            for t in targets:
+                new_t = {}
+                new_t['labels'] = torch.cat([t['labels'], torch.tensor(len(t['labels']) * [num_classes], dtype=torch.int64).cuda()], dim=0)
+                new_t['boxes'] = torch.cat([t['boxes'], t['boxes']], dim=0)
+                new_targets.append(new_t)
+            targets = new_targets
+        known = [(torch.ones_like(t['labels'])).cuda() for t in targets] # [ [ 1, 1], [1, 1, 1], ... ]
+        know_idx = [torch.nonzero(t) for t in known] # [ [0, 1], [0, 1, 2], ... ]
+        known_num = [sum(k) for k in known] # [ 2, 3, ... ]
+
+        # to use fix number of dn queries
+        if int(max(known_num)) == 0:
+            scalar = 1
+        elif scalar >= 100 and int(max(known_num))>0:
+            scalar=scalar//int(max(known_num))
+
+        if scalar <= 0:
+            scalar = 1
 
         # can be modified to selectively denosie some label or boxes; also known label prediction
         unmask_bbox = unmask_label = torch.cat(known)
+        # torch.cat(known) = [1, 1, 1, 1, 1, ... ]
         labels = torch.cat([t['labels'] for t in targets])
         boxes = torch.cat([t['boxes'] for t in targets])
         batch_idx = torch.cat([torch.full_like(t['labels'].long(), i) for i, t in enumerate(targets)])
+        # batch_idx = [ 0, 0, 1, 1, 1, ... ]
 
         known_indice = torch.nonzero(unmask_label + unmask_bbox)
+        # known_indice = [ 0, 1, 2, 3, 4, ... ] "elementwise addition = logical_and" of labels and bbox
         known_indice = known_indice.view(-1)
 
         # add noise
         known_indice = known_indice.repeat(scalar, 1).view(-1)
-        known_labels = labels.repeat(scalar, 1).view(-1)
         known_bid = batch_idx.repeat(scalar, 1).view(-1)
+        known_labels = labels.repeat(scalar, 1).view(-1)
         known_bboxs = boxes.repeat(scalar, 1)
         known_labels_expaned = known_labels.clone()
         known_bbox_expand = known_bboxs.clone()
+        #print("known_bbox_expand = " +str(known_bbox_expand.shape))
 
         # noise on the label
         if label_noise_scale > 0:
@@ -99,14 +122,40 @@ def prepare_for_dn(dn_args, tgt_weight, embedweight, batch_size, training, num_q
             chosen_indice = torch.nonzero(p < (label_noise_scale)).view(-1)  # usually half of bbox noise
             new_label = torch.randint_like(chosen_indice, 0, num_classes)  # randomly put a new one here
             known_labels_expaned.scatter_(0, chosen_indice, new_label)
+
         # noise on the box
         if box_noise_scale > 0:
+            known_bbox_ = torch.zeros_like(known_bboxs)
+            known_bbox_[:, :2] = known_bboxs[:, :2] - known_bboxs[:, 2:] / 2
+            known_bbox_[:, 2:] = known_bboxs[:, :2] + known_bboxs[:, 2:] / 2
+
             diff = torch.zeros_like(known_bbox_expand)
             diff[:, :2] = known_bbox_expand[:, 2:] / 2
-            diff[:, 2:] = known_bbox_expand[:, 2:]
-            known_bbox_expand += torch.mul((torch.rand_like(known_bbox_expand) * 2 - 1.0),
+            diff[:, 2:] = known_bbox_expand[:, 2:] / 2
+
+            if contrastive:
+                rand_sign = torch.randint_like(known_bbox_expand, low=0, high=2, dtype=torch.float32) * 2.0 - 1.0
+                rand_part = torch.rand_like(known_bbox_expand)
+                positive_idx = torch.tensor(range(len(boxes)//2)).long().cuda().unsqueeze(0).repeat(scalar, 1)
+                positive_idx += (torch.tensor(range(scalar)) * len(boxes)).long().cuda().unsqueeze(1)
+                positive_idx = positive_idx.flatten()
+                negative_idx = positive_idx + len(boxes)//2
+                rand_part[negative_idx] += 1.0
+                rand_part *= rand_sign
+
+                known_bbox_ += torch.mul(rand_part, diff).cuda() * box_noise_scale
+
+            else:
+                known_bbox_ += torch.mul((torch.rand_like(known_bbox_expand) * 2 - 1.0),
                                            diff).cuda() * box_noise_scale
-            known_bbox_expand = known_bbox_expand.clamp(min=0.0, max=1.0)
+
+            known_bbox_ = known_bbox_.clamp(min=0.0, max=1.0)
+            known_bbox_expand[:, :2] = (known_bbox_[:, :2] + known_bbox_[:, 2:]) / 2
+            known_bbox_expand[:, 2:] = known_bbox_[:, 2:] - known_bbox_[:, :2]
+
+        # in the case of negatives, override the label with "num_classes" label
+        if contrastive:
+            known_labels_expaned.scatter_(0, negative_idx, num_classes)
 
         m = known_labels_expaned.long().to('cuda')
         input_label_embed = label_enc(m)
@@ -118,16 +167,22 @@ def prepare_for_dn(dn_args, tgt_weight, embedweight, batch_size, training, num_q
         pad_size = int(single_pad * scalar)
         padding_label = torch.zeros(pad_size, hidden_dim).cuda()
         padding_bbox = torch.zeros(pad_size, 4).cuda()
-        input_query_label = torch.cat([padding_label, tgt], dim=0).repeat(batch_size, 1, 1)
-        input_query_bbox = torch.cat([padding_bbox, refpoint_emb], dim=0).repeat(batch_size, 1, 1)
+
+        if tgt is not None and refpoint_emb is not None:
+            input_query_label = torch.cat([padding_label, tgt], dim=0).repeat(batch_size, 1, 1)
+            input_query_bbox = torch.cat([padding_bbox, refpoint_emb], dim=0).repeat(batch_size, 1, 1)
+        else:
+            input_query_label = padding_label.repeat(batch_size, 1, 1)
+            input_query_bbox = padding_bbox.repeat(batch_size, 1, 1)
 
         # map in order
         map_known_indice = torch.tensor([]).to('cuda')
         if len(known_num):
-            map_known_indice = torch.cat([torch.tensor(range(num)) for num in known_num])  # [1,2, 1,2,3]
+            map_known_indice = torch.cat([torch.tensor(range(num)) for num in known_num])  # [0, 1, 0, 1, 2]
             map_known_indice = torch.cat([map_known_indice + single_pad * i for i in range(scalar)]).long()
+            # 
         if len(known_bid):
-            input_query_label[(known_bid.long(), map_known_indice)] = input_label_embed
+            input_query_label[(known_bid.long(), map_known_indice)] = input_label_embed # [ bs, query_idx, hidden_dim ]
             input_query_bbox[(known_bid.long(), map_known_indice)] = input_bbox_embed
 
         tgt_size = pad_size + num_queries * num_patterns
@@ -149,11 +204,17 @@ def prepare_for_dn(dn_args, tgt_weight, embedweight, batch_size, training, num_q
             'map_known_indice': torch.as_tensor(map_known_indice).long(),
             'known_lbs_bboxes': (known_labels, known_bboxs),
             'know_idx': know_idx,
-            'pad_size': pad_size
+            'pad_size': pad_size,
+            'scalar': scalar,
+            'contrastive' : contrastive,
         }
     else:  # no dn for inference
-        input_query_label = tgt.repeat(batch_size, 1, 1)
-        input_query_bbox = refpoint_emb.repeat(batch_size, 1, 1)
+        if tgt is not None and refpoint_emb is not None:
+            input_query_label = tgt.repeat(batch_size, 1, 1)
+            input_query_bbox = refpoint_emb.repeat(batch_size, 1, 1)
+        else:
+            input_query_label = None
+            input_query_bbox = None
         attn_mask = None
         mask_dict = None
 
@@ -169,7 +230,7 @@ def dn_post_process(outputs_class, outputs_coord, mask_dict):
     put the dn part in the mask_dict
     """
     if mask_dict and mask_dict['pad_size'] > 0:
-        output_known_class = outputs_class[:, :, :mask_dict['pad_size'], :]
+        output_known_class = outputs_class[:, :, :mask_dict['pad_size'], :] # [ levels, bs, query size, hidden dim]
         output_known_coord = outputs_coord[:, :, :mask_dict['pad_size'], :]
         outputs_class = outputs_class[:, :, mask_dict['pad_size']:, :]
         outputs_coord = outputs_coord[:, :, mask_dict['pad_size']:, :]
@@ -188,15 +249,32 @@ def prepare_for_loss(mask_dict):
     output_known_class, output_known_coord = mask_dict['output_known_lbs_bboxes']
     known_labels, known_bboxs = mask_dict['known_lbs_bboxes']
     map_known_indice = mask_dict['map_known_indice']
+    # [0, 1, 2, 3, 4, ..., 0, 1, 2, 3, 4, ...]
 
     known_indice = mask_dict['known_indice']
+    # [0, 1, 2, 3, 4, ...]
 
     batch_idx = mask_dict['batch_idx']
     bid = batch_idx[known_indice]
+    num_tgt = known_indice.numel()
+
     if len(output_known_class) > 0:
         output_known_class = output_known_class.permute(1, 2, 0, 3)[(bid, map_known_indice)].permute(1, 0, 2)
+        # [ levels, bs, qs, hdim ] -> [ bs, qs, lvls, hdim] -> [ lvls, bs * qs, hdim ]
         output_known_coord = output_known_coord.permute(1, 2, 0, 3)[(bid, map_known_indice)].permute(1, 0, 2)
-    num_tgt = known_indice.numel()
+
+    if mask_dict['contrastive'] :
+        scalar = mask_dict['scalar']
+        num_tgt = num_tgt // 2
+        num_box = num_tgt // scalar
+        positive_idx = torch.tensor(range(num_box)).long().cuda().unsqueeze(0).repeat(scalar, 1)
+        positive_idx += (torch.tensor(range(scalar)) * num_box * 2).long().cuda().unsqueeze(1)
+        positive_idx = positive_idx.flatten()
+        # bbox reconstruction only use positive cases
+        # but, class reconstruction use both positive and negative(with no-object)
+        output_known_coord = output_known_coord[:,positive_idx,:]
+        known_bboxs = known_bboxs[positive_idx,:]
+
     return known_labels, known_bboxs, output_known_class, output_known_coord, num_tgt
 
 
@@ -261,6 +339,7 @@ def compute_dn_loss(mask_dict, training, aux_num, focal_alpha):
     if training and 'output_known_lbs_bboxes' in mask_dict:
         known_labels, known_bboxs, output_known_class, output_known_coord, \
         num_tgt = prepare_for_loss(mask_dict)
+        # -1 is the final level [ levels, bs * qs, hidden_dim ]
         losses.update(tgt_loss_labels(output_known_class[-1], known_labels, num_tgt, focal_alpha))
         losses.update(tgt_loss_boxes(output_known_coord[-1], known_bboxs, num_tgt))
     else:
