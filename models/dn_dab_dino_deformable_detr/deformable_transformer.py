@@ -34,7 +34,7 @@ class DeformableTransformer(nn.Module):
                  activation="relu", return_intermediate_dec=False,
                  num_feature_levels=4, dec_n_points=4,  enc_n_points=4,
                  two_stage=False, two_stage_num_proposals=300,
-                 use_dab=False, high_dim_query_update=False, no_sine_embed=False):
+                 use_dab=False, use_mqs=False, use_look_forward_twice=False, high_dim_query_update=False, no_sine_embed=False):
         super().__init__()
 
         self.d_model = d_model
@@ -42,6 +42,8 @@ class DeformableTransformer(nn.Module):
         self.two_stage = two_stage
         self.two_stage_num_proposals = two_stage_num_proposals
         self.use_dab = use_dab
+        self.use_mqs = use_mqs
+        self.return_intermediate = return_intermediate_dec
 
         encoder_layer = DeformableTransformerEncoderLayer(d_model, dim_feedforward,
                                                           dropout, activation,
@@ -52,16 +54,22 @@ class DeformableTransformer(nn.Module):
                                                           dropout, activation,
                                                           num_feature_levels, nhead, dec_n_points)
         self.decoder = DeformableTransformerDecoder(decoder_layer, num_decoder_layers, return_intermediate_dec, 
-                                                            use_dab=use_dab, d_model=d_model, high_dim_query_update=high_dim_query_update, no_sine_embed=no_sine_embed)
-
+                                                            use_dab=use_dab, use_look_forward_twice=use_look_forward_twice,
+                                                            d_model=d_model, high_dim_query_update=high_dim_query_update, no_sine_embed=no_sine_embed)
         self.level_embed = nn.Parameter(torch.Tensor(num_feature_levels, d_model))
+        self.num_queries = two_stage_num_proposals
 
         if two_stage:
             self.enc_output = nn.Linear(d_model, d_model)
             self.enc_output_norm = nn.LayerNorm(d_model)
-            self.pos_trans = nn.Linear(d_model * 2, d_model * 2)
-            self.pos_trans_norm = nn.LayerNorm(d_model * 2)
+            if use_mqs:
+                self.tgt_embed = nn.Embedding(self.num_queries, d_model)
+            else:
+                self.pos_trans = nn.Linear(d_model * 2, d_model * 2)
+                self.pos_trans_norm = nn.LayerNorm(d_model * 2)
+            nn.init.normal_(self.tgt_embed.weight.data)
         else:
+            self.tgt_embed = None
             if not self.use_dab:
                 self.reference_points = nn.Linear(d_model, 2)
 
@@ -83,8 +91,8 @@ class DeformableTransformer(nn.Module):
             constant_(self.reference_points.bias.data, 0.)
         normal_(self.level_embed)
 
-    def get_proposal_pos_embed(self, proposals):
-        num_pos_feats = 128
+    def get_proposal_pos_embed(self, proposals, d_model):
+        num_pos_feats = d_model // 4
         temperature = 10000
         scale = 2 * math.pi
 
@@ -176,18 +184,55 @@ class DeformableTransformer(nn.Module):
 
         # prepare input for decoder
         bs, _, c = memory.shape
-        if self.use_dab:
-            reference_points = query_embed[..., self.d_model:].sigmoid() 
-            tgt = query_embed[..., :self.d_model]
-            # tgt = tgt.unsqueeze(0).expand(bs, -1, -1)
-            init_reference_out = reference_points
+        if self.two_stage:
+            output_memory, output_proposals = self.gen_encoder_output_proposals(memory, mask_flatten, spatial_shapes)
+
+            # hack implementation for two-stage Deformable DETR
+    
+            enc_outputs_class = self.decoder.class_embed[self.decoder.num_layers](output_memory)
+            enc_outputs_coord_unact = self.decoder.bbox_embed[self.decoder.num_layers](output_memory) + output_proposals
+
+            topk = self.two_stage_num_proposals
+            topk_proposals = torch.topk(enc_outputs_class[..., 0], topk, dim=1)[1]
+            topk_coords_unact = torch.gather(enc_outputs_coord_unact, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, 4))
+            topk_coords_unact = topk_coords_unact.detach()
+            reference_points = topk_coords_unact.sigmoid()
+
+            # MQS is dab + mqs
+            if self.use_mqs:
+                assert self.use_dab
+                reference_points_mqs = reference_points
+
+                # sometimes the target is empty, add a zero part of query_embed to avoid unused parameters
+                reference_points_mqs += self.tgt_embed.weight[0][0]*torch.tensor(0).cuda()
+                tgt_mqs = self.tgt_embed.weight[:, None, :].repeat(1, bs, 1).transpose(0, 1) # nq, bs, d_model
+
+                # query_embed is non None when training.
+                if query_embed is not None:
+                    reference_points_dab = query_embed[..., self.d_model:].sigmoid() 
+                    tgt_dab = query_embed[..., :self.d_model]
+
+                    reference_points = torch.cat([reference_points_dab, reference_points_mqs], dim=1)
+                    tgt = torch.cat([tgt_dab, tgt_mqs], dim=1)
+                else:
+                    reference_points = reference_points_mqs
+                    tgt = tgt_mqs
+            else:
+                pos_trans_out = self.pos_trans_norm(self.pos_trans(self.get_proposal_pos_embed(topk_coords_unact, self.d_model)))
+                query_embed, tgt = torch.split(pos_trans_out, c, dim=2)
         else:
-            query_embed, tgt = torch.split(query_embed, c, dim=1)
-            query_embed = query_embed.unsqueeze(0).expand(bs, -1, -1)
-            tgt = tgt.unsqueeze(0).expand(bs, -1, -1)
-            reference_points = self.reference_points(query_embed).sigmoid() 
+            if self.use_dab:
+                reference_points = query_embed[..., self.d_model:].sigmoid() 
+                tgt = query_embed[..., :self.d_model]
+                # tgt = tgt.unsqueeze(0).expand(bs, -1, -1)
+            else:
+                query_embed, tgt = torch.split(query_embed, c, dim=1)
+                query_embed = query_embed.unsqueeze(0).expand(bs, -1, -1)
+                tgt = tgt.unsqueeze(0).expand(bs, -1, -1)
+                reference_points = self.reference_points(query_embed).sigmoid() 
                 # bs, num_quires, 2
-            init_reference_out = reference_points
+
+        init_reference_out = reference_points
 
         # decoder
         hs, inter_references = self.decoder(tgt, reference_points, memory,
@@ -195,8 +240,18 @@ class DeformableTransformer(nn.Module):
                                             query_pos=query_embed if not self.use_dab else None, 
                                             src_padding_mask=mask_flatten, attn_mask=attn_mask)
 
+        if self.return_intermediate:
+            reference_points = inter_references[-1]
+        else:
+            reference_points = inter_references
+
+        if not self.two_stage:
+            enc_outputs_class, enc_outputs_coord_unact = None, None
+
+        
         inter_references_out = inter_references
-        return hs, init_reference_out, inter_references_out, None, None
+        #return hs, init_reference_out, inter_references_out, None, None
+        return hs, init_reference_out, inter_references_out, enc_outputs_class, enc_outputs_coord_unact
 
 
 class DeformableTransformerEncoderLayer(nn.Module):
@@ -340,7 +395,7 @@ class DeformableTransformerDecoderLayer(nn.Module):
 
 
 class DeformableTransformerDecoder(nn.Module):
-    def __init__(self, decoder_layer, num_layers, return_intermediate=False, use_dab=False, d_model=256, high_dim_query_update=False, no_sine_embed=False):
+    def __init__(self, decoder_layer, num_layers, return_intermediate=False, use_dab=False, use_look_forward_twice=False, d_model=256, high_dim_query_update=False, no_sine_embed=False):
         super().__init__()
         self.layers = _get_clones(decoder_layer, num_layers)
         self.num_layers = num_layers
@@ -351,6 +406,8 @@ class DeformableTransformerDecoder(nn.Module):
         self.use_dab = use_dab
         self.d_model = d_model
         self.no_sine_embed = no_sine_embed
+        self.use_look_forward_twice = use_look_forward_twice
+
         if use_dab:
             self.query_scale = MLP(d_model, d_model, d_model, 2)
             if self.no_sine_embed:
@@ -413,7 +470,11 @@ class DeformableTransformerDecoder(nn.Module):
 
             if self.return_intermediate:
                 intermediate.append(output)
-                intermediate_reference_points.append(reference_points)
+
+                if self.use_look_forward_twice:
+                    intermediate_reference_points.append(new_reference_points)
+                else:
+                    intermediate_reference_points.append(reference_points)
 
         if self.return_intermediate:
             return torch.stack(intermediate), torch.stack(intermediate_reference_points)
@@ -451,7 +512,9 @@ def build_deforamble_transformer(args):
         enc_n_points=args.enc_n_points,
         two_stage=args.two_stage,
         two_stage_num_proposals=args.num_queries,
-        use_dab=True)
+        use_dab=True,
+        use_mqs=args.use_mqs,
+        use_look_forward_twice=args.use_lft)
 
 
 class MLP(nn.Module):

@@ -7,3 +7,4 @@
 from .DN_DAB_DETR import build_DABDETR
 from .dn_dab_deformable_detr import build_dab_deformable_detr
 from .dn_dab_deformable_detr_deformable_encoder_only import build_dab_deformable_detr_deformable_encoder_only
+from .dn_dab_dino_deformable_detr import build_dab_dino_deformable_detr

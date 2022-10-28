@@ -24,6 +24,7 @@ import util.misc as utils
 from datasets import build_dataset, get_coco_api_from_dataset
 from engine import evaluate, train_one_epoch
 from models import build_DABDETR, build_dab_deformable_detr, build_dab_deformable_detr_deformable_encoder_only
+from models import build_dab_dino_deformable_detr
 from util.utils import clean_state_dict
 
 
@@ -41,6 +42,10 @@ def get_args_parser():
                         help="box noise scale to shift and scale")
     parser.add_argument('--contrastive', action="store_true",
                         help="use contrastive training.")
+    parser.add_argument('--use_mqs', action="store_true",
+                        help="use mixed query selection from DINO.")
+    parser.add_argument('--use_lft', action="store_true",
+                        help="use look forward twice from DINO.")
 
     # about lr
     parser.add_argument('--lr', default=1e-4, type=float, 
@@ -60,7 +65,7 @@ def get_args_parser():
 
     # Model parameters
     parser.add_argument('--modelname', '-m', type=str, required=True, choices=['dn_dab_detr', 'dn_dab_deformable_detr',
-                                                                    'dn_dab_deformable_detr_deformable_encoder_only'])
+                                                                    'dn_dab_deformable_detr_deformable_encoder_only', 'dn_dab_dino_deformable_detr'])
     parser.add_argument('--frozen_weights', type=str, default=None,
                         help="Path to the pretrained model. If set, only the mask head will be trained")
 
@@ -201,6 +206,8 @@ def build_model_main(args):
         model, criterion, postprocessors = build_dab_deformable_detr(args)
     elif args.modelname.lower() == 'dn_dab_deformable_detr_deformable_encoder_only':
         model, criterion, postprocessors = build_dab_deformable_detr_deformable_encoder_only(args)
+    elif args.modelname.lower() == 'dn_dab_dino_deformable_detr':
+        model, criterion, postprocessors = build_dab_dino_deformable_detr(args)
     else:
         raise NotImplementedError
 
