@@ -38,6 +38,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
     print_freq = 10
 
     _cnt = 0
+
     for samples, targets in metric_logger.log_every(data_loader, print_freq, header, logger=logger):
 
         samples = samples.to(device)
@@ -45,8 +46,11 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 
         with torch.cuda.amp.autocast(enabled=args.amp):
             if need_tgt_for_training:
-                outputs, mask_dict = model(samples, dn_args=(targets, args.scalar, args.label_noise_scale,
-                                                             args.box_noise_scale, args.num_patterns))
+                dn_args=(targets, args.scalar, args.label_noise_scale, args.box_noise_scale, args.num_patterns)
+                if args.contrastive is not False:
+                    dn_args += (args.contrastive,)
+
+                outputs, mask_dict = model(samples, dn_args=dn_args)
                 loss_dict = criterion(outputs, targets, mask_dict)
             else:
                 outputs = model(samples)
@@ -82,6 +86,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
             scaler.update()
         else:
             # original backward function
+            optimizer.zero_grad()
             losses.backward()
             if max_norm > 0:
                 torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm)
