@@ -8,7 +8,7 @@ This repository is an official implementation of the [DN-DETR](https://arxiv.org
 
 ## News
 
-[2022/12]: Code for [Mask DINO](https://github.com/IDEA-Research/MaskDINO) are available! Mask DINO further Achieves **51.7** and **59.0** box AP on COCO with a ResNet-50 and SwinL without extra detection data, outperforming DINO under the same setting!
+[2022/12]: Code for [Mask DINO](https://github.com/IDEA-Research/MaskDINO) is available! Mask DINO further Achieves **51.7** and **59.0** box AP on COCO with a ResNet-50 and SwinL without extra detection data, outperforming DINO under the same setting!
 
 [2022/11]: DINO implementation based on DN-DETR is released in this repo. Credits to @[Vallum](https://github.com/Vallum)! This optimized version under ResNet-50 can reach [50.8 ~ 51.0 AP](https://github.com/IDEA-Research/DN-DETR/pull/45) in 36epochs.
 
