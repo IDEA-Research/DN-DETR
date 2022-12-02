@@ -7,6 +7,9 @@ This repository is an official implementation of the [DN-DETR](https://arxiv.org
 [[paper link](https://arxiv.org/pdf/2203.01305.pdf)] [[中文解读](https://www.zhihu.com/question/517340666/answer/2381304399)]
 
 ## News
+
+[2022/12]: Code for [Mask DINO](https://github.com/IDEA-Research/MaskDINO) are available! Mask DINO further Achieves **51.7** and **59.0** box AP on COCO with a ResNet-50 and SwinL without extra detection data, outperforming DINO under the same setting!
+
 [2022/11]: DINO implementation based on DN-DETR is released in this repo. Credits to @[Vallum](https://github.com/Vallum)! This optimized version under ResNet-50 can reach [50.8 ~ 51.0 AP](https://github.com/IDEA-Research/DN-DETR/pull/45) in 36epochs.
 
 [2022/9]: We release a toolbox [detrex](https://github.com/IDEA-Research/detrex) that provides many state-of-the-art Transformer-based detection algorithms. It includes DN-DETR with better performance.  Welcome to use it!
