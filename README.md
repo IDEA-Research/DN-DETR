@@ -176,7 +176,7 @@ We test our models under ```python=3.7.3,pytorch=1.9.0,cuda=11.1```. Other versi
 
 1. Clone this repo
 ```sh
-git clone https://github.com/IDEA-opensource/DN-DETR.git
+git clone https://github.com/IDEA-Research/DN-DETR.git
 cd DN-DETR
 ```
 
